@@ -4,8 +4,11 @@ SELECT
     (SELECT COUNT(DISTINCT player_id) FROM Activity),2) AS fraction
 FROM Activity
 WHERE player_id IN (
-    SELECT DISTINCT A1.player_id FROM Activity A1 
-    JOIN Activity A2 
-    ON A1.player_id = A2.player_id 
-    WHERE DATEDIFF(day, A1.event_date, A2.event_date) = 1
+    SELECT A1.player_id FROM
+    (
+        SELECT player_id, MIN(event_date) AS first_login FROM Activity GROUP BY player_id
+    ) AS first_login_table
+    JOIN Activity A1
+    ON A1.player_id = first_login_table.player_id 
+    WHERE DATEDIFF(day, first_login_table.first_login, A1.event_date) = 1
 )
